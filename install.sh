@@ -20,19 +20,26 @@ declare -a arr=("httping"
 
 declare -A go_pkg
 
-go_pkg[subfinder]="github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest"
-go_pkg[httpx]="github.com/projectdiscovery/httpx/cmd/httpx@latest"
-go_pkg[nuclei]="github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest"
-go_pkg[notify]="github.com/projectdiscovery/notify/cmd/notify@latest"
-go_pkg[anew]="github.com/tomnomnom/anew@latest"
-go_pkg[httprobe]="github.com/tomnomnom/httprobe@latest"
-go_pkg[gobuster]="github.com/OJ/gobuster/v3@latest"
-go_pkg[meg]="github.com/tomnomnom/meg@latest"
-go_pkg[naabu]="github.com/projectdiscovery/naabu/v2/cmd/naabu@latest"
-go_pkg[jaeles]="github.com/jaeles-project/jaeles@latest"
-go_pkg[amass]="github.com/owasp-amass/amass/v4/...@master"
-go_pkg[gospider]="github.com/jaeles-project/gospider@latest"
-go_pkg[chaos]="github.com/projectdiscovery/chaos-client/cmd/chaos@latest"
+go_pkg[subfinder]="go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest"
+go_pkg[httpx]="go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest"
+go_pkg[nuclei]="go install -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest"
+go_pkg[notify]="go install -v github.com/projectdiscovery/notify/cmd/notify@latest"
+go_pkg[anew]="go install -v github.com/tomnomnom/anew@latest"
+go_pkg[httprobe]="go install -v github.com/tomnomnom/httprobe@latest"
+go_pkg[gobuster]="go install -v github.com/OJ/gobuster/v3@latest"
+go_pkg[meg]="go install -v github.com/tomnomnom/meg@latest"
+go_pkg[naabu]="go install -v github.com/projectdiscovery/naabu/v2/cmd/naabu@latest"
+go_pkg[jaeles]="go install -v github.com/jaeles-project/jaeles@latest"
+go_pkg[amass]="go install -v github.com/owasp-amass/amass/v4/...@master"
+go_pkg[gospider]="go install -v github.com/jaeles-project/gospider@latest"
+go_pkg[chaos]="go install -v github.com/projectdiscovery/chaos-client/cmd/chaos@latest"
+go_pkg[gf]="go install -v github.com/tommomnom/gf/cmd/gf@latest"
+go_pkg[assetfinder]="go install -v github.com/tomnomnom/assetfinder/cmd/assetfinder@latest"
+go_pkg[airixss]="go install -v github.com/ferreiraklet/airixss@latest"
+go_pkg[cariddi]="go install -v github.com/edoardottt/cariddi/cmd/cariddi@latest"
+go_pkg[dalfox]="go install -v github.com/hahwul/dalfox/v2@latest"
+go_pkg[filter-resolved]="go install -v github.com/tomnomnom/hacks/filter-resolved"
+go_pkg[ffuf]="go install -v github.com/ffuf/ffuf/v2@latest"
 
 function package_update() {
     sudo apt-get update -yq
@@ -210,7 +217,7 @@ function go_install(){
 		echo "$1 already installed..."
 	else
 		echo "Installing $1"
-		go install -v $2
+		$2
 		echo "Installed $1"
 	fi
 }
