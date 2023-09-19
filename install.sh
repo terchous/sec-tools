@@ -44,6 +44,7 @@ go_pkg[gau]="go install -v github.com/lc/gau/v2/cmd/gau@latest"
 go_pkg[hakrawler]="go install -v github.com/hakluke/hakrawler@latest"
 go_pkg[haklistgen]="go install -v github.com/hakluke/haklistgen@latest"
 go_pkg[waybackurls]="go install -v github.com/tomnomnom/waybackurls@latest"
+go_pkg[goop]="go install github.com/deletescape/goop@latest"
 
 function package_update() {
     sudo apt-get update -yq
