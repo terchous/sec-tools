@@ -30,6 +30,7 @@ declare -a arr=("httping"
 		"libxmlsec1-dev"
 		"libffi-dev"
 		"liblzma-dev"
+		"parallel"
         )
 
 declare -A go_pkg
