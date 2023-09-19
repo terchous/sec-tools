@@ -40,6 +40,7 @@ go_pkg[cariddi]="go install -v github.com/edoardottt/cariddi/cmd/cariddi@latest"
 go_pkg[dalfox]="go install -v github.com/hahwul/dalfox/v2@latest"
 go_pkg[filter-resolved]="go install -v github.com/tomnomnom/hacks/filter-resolved"
 go_pkg[ffuf]="go install -v github.com/ffuf/ffuf/v2@latest"
+go_pkg[gau]="go install github.com/lc/gau/v2/cmd/gau@latest"
 
 function package_update() {
     sudo apt-get update -yq
