@@ -18,6 +18,22 @@ declare -a arr=("httping"
                 "tree"
         )
 
+declare -A go_pkg
+
+go_pkg[subfinder]="github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest"
+go_pkg[httpx]="github.com/projectdiscovery/httpx/cmd/httpx@latest"
+go_pkg[nuclei]="github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest"
+go_pkg[notify]="github.com/projectdiscovery/notify/cmd/notify@latest"
+go_pkg[anew]="github.com/tomnomnom/anew@latest"
+go_pkg[httprobe]="github.com/tomnomnom/httprobe@latest"
+go_pkg[gobuster]="github.com/OJ/gobuster/v3@latest"
+go_pkg[meg]="github.com/tomnomnom/meg@latest"
+go_pkg[naabu]="github.com/projectdiscovery/naabu/v2/cmd/naabu@latest"
+go_pkg[jaeles]="github.com/jaeles-project/jaeles@latest"
+go_pkg[amass]="github.com/owasp-amass/amass/v4/...@master"
+go_pkg[gospider]="github.com/jaeles-project/gospider@latest"
+go_pkg[chaos]="github.com/projectdiscovery/chaos-client/cmd/chaos@latest"
+
 function package_update() {
     sudo apt-get update -yq
 }
@@ -146,14 +162,7 @@ function install_meg(){
 
 function install_naabu(){
 	package_install libpcap-dev
-        if [ -f "~/go/bin/naabu" ];
-        then
-                echo "naabu installed"
-        else
-                echo "Installing naabu..."
-		go install -v github.com/projectdiscovery/naabu/v2/cmd/naabu@latest
-                echo "Installed naabu..."
-        fi
+	go_install "naabu" "{$go_pkg[naabu]}"
 }
 
 function install_jaeles(){
@@ -191,6 +200,27 @@ function install_amass(){
 		go install -v github.com/owasp-amass/amass/v4/...@master
                 echo "Installed amass"
         fi
+}
+
+
+function go_install(){
+	FILE="~/go/bin/$1"
+	if [ -f "$FILE" ];
+	then
+		echo "$1 already installed..."
+	else
+		echo "Installing $1"
+		go install -v $2
+		echo "Installed $1"
+	fi
+}
+
+function install_go_tools(){
+	for package in "${!go_pkg[@]}"
+	do
+		echo "$package ${go_pkg[$package]}"
+		go_install "$package" "${go_pkg[$package]}"
+	done
 }
 
 function install_masscan(){
@@ -245,28 +275,22 @@ function install_git_lfs(){
 }
 
 function main(){
-    package_update
-    package_upgrade
+   package_update
+   package_upgrade
 
-    for package in "${arr[@]}"
-    do
-            echo "Installing $package"
-            package_install $package
-            echo "Installed $package"
-    done
-    install_golang
-    install_pyenv
-    install_projectdiscovery_tools
-    install_gobuster
-    install_meg
-    install_masscan
-    install_git_lfs
-    install_naabu
-    install_jaeles
-    install_gau
-    install_amass
-    download_seclists
-    download_kj_ips
+   for package in "${arr[@]}"
+   do
+           echo "Installing $package"
+           package_install $package
+           echo "Installed $package"
+   done
+   install_golang
+   install_pyenv
+   install_naabu
+   install_go_tools
+   install_git_lfs
+   download_seclists
+   download_kj_ips
 }
 
 main
