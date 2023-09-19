@@ -16,6 +16,20 @@ declare -a arr=("httping"
                 "iptraf"
                 "htop"
                 "tree"
+		"build-essential"
+		"libssl-dev"
+		"zlib1g-dev"
+		"libbz2-dev"
+		"libreadline-dev"
+		"libsqlite3-dev"
+		"curl"
+		"libncursesw5-dev"
+		"xz-utils"
+		"tk-dev"
+		"libxml2-dev"
+		"libxmlsec1-dev"
+		"libffi-dev"
+		"liblzma-dev"
         )
 
 declare -A go_pkg
@@ -72,6 +86,14 @@ function install_pyenv(){
                 echo "Installing pyenv..."
                 curl https://pyenv.run | bash
         fi
+}
+
+function install_pipx(){
+	python -m pip install pipx --user
+}
+
+function install_paramspider(){
+	pipx install https://github.com/devanshbatham/ParamSpider.git
 }
 
 function install_golang(){
@@ -302,6 +324,8 @@ function main(){
    install_naabu
    install_go_tools
    install_git_lfs
+   install_pipx
+   install_paramspider
    download_seclists
    download_kj_ips
 }
