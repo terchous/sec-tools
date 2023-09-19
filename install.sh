@@ -98,6 +98,10 @@ function install_paramspider(){
 	pipx install git+https://github.com/devanshbatham/ParamSpider
 }
 
+function install_uro(){
+	pipx install git+https://github.com/s0md3v/uro
+}
+
 function install_golang(){
 	GO_VERSION="1.20.1"
 	if [ -d "/usr/local/go/bin" ];
@@ -311,6 +315,32 @@ function install_git_lfs(){
 	git lfs install
 }
 
+function install_gf_templates(){
+	START_CWD=$(pwd)
+	mkdir -p ~/.gf
+	mkdir -p ~/tools
+	cd ~/tools
+	git clone https://github.com/tomnomnom/gf.git
+	cd gf
+	cp examples/*.json ~/.gf/
+	cd ~/.gf/
+	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/redirect.json
+	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/sqli.json
+	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/xss.json
+	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/debug_logic.json
+	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/idor.json
+	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/img-traversal.json
+	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/interestingEXT.json
+	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/interestingparams.json
+	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/interestingsubs.json
+	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/jsvar.json
+	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/lfi.json
+	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/rce.json
+	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/ssrf.json
+	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/ssti.json
+	cd $START_CWD
+}
+
 function main(){
    package_update
    package_upgrade
@@ -330,6 +360,8 @@ function main(){
    install_paramspider
    download_seclists
    download_kj_ips
+   install_gf_templates
+   install_uro
 }
 
 main
