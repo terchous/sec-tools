@@ -167,6 +167,32 @@ function install_jaeles(){
         fi
 }
 
+
+function install_gau(){
+        FILE="~/go/bin/gau"
+        if [ -f "$FILE" ];
+        then
+                echo "GetAllUrls alerady installed..."
+        else
+                echo "Installing GetAllUrls..."
+                go install github.com/lc/gau/v2/cmd/gau@latest
+                echo "Installed GetAllUrls..."
+        fi
+}
+
+
+function install_amass(){
+        FILE="~/go/bin/amass"
+        if [ -f "$FILE" ];
+        then
+                echo "amass already installed..."
+        else
+                echo "Installing GetAllUrls..."
+		go install -v github.com/owasp-amass/amass/v4/...@master
+                echo "Installed amass"
+        fi
+}
+
 function install_masscan(){
     FILE="/usr/local/bin/masscan"
 
@@ -237,6 +263,8 @@ function main(){
     install_git_lfs
     install_naabu
     install_jaeles
+    install_gau
+    install_amass
     download_seclists
     download_kj_ips
 }
