@@ -60,6 +60,7 @@ go_pkg[haklistgen]="go install -v github.com/hakluke/haklistgen@latest"
 go_pkg[waybackurls]="go install -v github.com/tomnomnom/waybackurls@latest"
 go_pkg[goop]="go install -v github.com/deletescape/goop@latest"
 go_pkg[katana]="go install -v github.com/projectdiscovery/katana/cmd/katana@latest"
+go_pkg[qsreplace]="go install -v github.com/tomnomnom/qsreplace@latest"
 
 function package_update() {
     sudo apt-get update -yq
@@ -93,7 +94,7 @@ function install_pipx(){
 }
 
 function install_paramspider(){
-	pipx install https://github.com/devanshbatham/ParamSpider.git
+	pipx install git+https://github.com/devanshbatham/ParamSpider
 }
 
 function install_golang(){
