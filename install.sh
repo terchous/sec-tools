@@ -351,6 +351,16 @@ function install_gf_templates(){
 	cd $START_CWD
 }
 
+install_docker(){
+	package_install docker.io
+	sudo systemctl enable docker --now
+	sudo usermod -aG docker $USER
+	printf '%s\n' "deb https://download.docker.com/linux/debian bullseye stable" | sudo tee /etc/apt/sources.list.d/docker-ce.list
+	curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/docker-ce-archive-keyring.gpg
+	package_update
+	package_install docker-ce docker-cli-ce containerd.io
+}
+
 download_bbrf_server(){
 	if [ -d ~/tools/bbrf-server ];
 	then
@@ -383,6 +393,7 @@ function main(){
    install_gf_templates
    install_uro
    install_ipython
+   install_docker
    download_bbrf_server
    install_bbrf-client
 }
