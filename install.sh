@@ -104,6 +104,10 @@ function install_uro(){
 	pipx install git+https://github.com/s0md3v/uro
 }
 
+function install_bbrf-client(){
+	pipx install git+https://github.com/honoki/bbrf-client
+}
+
 function install_golang(){
 	GO_VERSION="1.20.1"
 	if [ -d "/usr/local/go/bin" ];
@@ -343,6 +347,16 @@ function install_gf_templates(){
 	cd $START_CWD
 }
 
+download_bbrf_server(){
+	if [ -d ~/tools/bbrf-server ];
+	then
+		echo "BBRF is Installed already..."
+	else
+		git clone https://github.com/honoki/bbrf-server/ ~/tools/bbrf-server
+		echo "CONFIGURE Password in docker-compose.yml"
+	fi	
+}
+
 function main(){
    package_update
    package_upgrade
@@ -364,6 +378,8 @@ function main(){
    download_kj_ips
    install_gf_templates
    install_uro
+   download_bbrf_server
+   install_bbrf-client
 }
 
 main
