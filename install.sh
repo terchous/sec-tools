@@ -371,6 +371,13 @@ download_bbrf_server(){
 	fi	
 }
 
+function cleanup_go(){
+        echo "Cleaning Go Cache"
+        go clean -cache
+        go clean -modcache
+        echo "Cleaned Go Cache"
+}
+
 function main(){
    package_update
    package_upgrade
@@ -396,6 +403,7 @@ function main(){
    install_docker
    download_bbrf_server
    install_bbrf-client
+   cleanup_go
 }
 
 main
