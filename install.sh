@@ -62,6 +62,8 @@ go_pkg[waybackurls]="go install -v github.com/tomnomnom/waybackurls@latest"
 go_pkg[goop]="go install -v github.com/deletescape/goop@latest"
 go_pkg[katana]="go install -v github.com/projectdiscovery/katana/cmd/katana@latest"
 go_pkg[qsreplace]="go install -v github.com/tomnomnom/qsreplace@latest"
+go_pkg[metabigor]="go install github.com/j3ssie/metabigor@latest"
+go_pkg[unfurl]="go install github.com/tomnomnom/unfurl@latest"
 
 function package_update() {
     sudo apt-get update -yq
