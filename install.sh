@@ -108,6 +108,10 @@ function install_bbrf-client(){
 	pipx install git+https://github.com/honoki/bbrf-client
 }
 
+function install_ipython(){
+	pipx install ipython
+}
+
 function install_golang(){
 	GO_VERSION="1.20.1"
 	if [ -d "/usr/local/go/bin" ];
@@ -378,6 +382,7 @@ function main(){
    download_kj_ips
    install_gf_templates
    install_uro
+   install_ipython
    download_bbrf_server
    install_bbrf-client
 }
