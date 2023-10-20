@@ -113,7 +113,7 @@ function install_ipython(){
 }
 
 function install_golang(){
-	GO_VERSION="1.20.1"
+	GO_VERSION="1.21.0"
 	if [ -d "/usr/local/go/bin" ];
 	then
 		echo "Go $(go version) installed..."
