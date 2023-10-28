@@ -394,6 +394,14 @@ function download_bbrf_server(){
 	fi	
 }
 
+function install_x8(){
+        echo "Installing cargo"
+        package_install x8
+        echo "Installing x8"
+        cargo install x8
+        echo "Installed x8"
+}
+
 function cleanup_go(){
         echo "Cleaning Go Cache"
         go clean -cache
@@ -425,6 +433,7 @@ function main(){
    install_uro
    install_ipython
    install_docker
+   install_x8
    download_bbrf_server
    install_bbrf-client
    cleanup_go
