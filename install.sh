@@ -35,6 +35,7 @@ declare -a arr=("httping"
 
 declare -A go_pkg
 
+go_pkg[pdtm]="go install -v github.com/projectdiscovery/pdtm/cmd/pdtm@latest"
 go_pkg[subfinder]="go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest"
 go_pkg[httpx]="go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest"
 go_pkg[nuclei]="go install -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest"
