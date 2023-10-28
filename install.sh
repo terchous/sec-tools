@@ -98,7 +98,17 @@ function install_pipx(){
 }
 
 function install_paramspider(){
-	pipx install git+https://github.com/devanshbatham/ParamSpider
+        if [ -d "~/tools/paramspider" ];
+        then
+                echo "paramspider already present"
+        else
+                git clone https://github.com/devanshbatham/paramspider ~/tools/paramspider
+	        cd ~/tools/paramspider
+                python -m venv .venv
+                .venv/bin/pip install .
+                cd ~
+                echo "ParamSpider installed"
+        fi
 }
 
 function install_uro(){
