@@ -304,6 +304,18 @@ function download_seclists(){
         fi
 }
 
+function download_fuzz(){
+        if [ -d ~/wordlists/fuzzlists ];
+        then
+                echo "Fuzz wordlists downloaded already..."
+        else
+                mkdir -p ~/wordlists/fuzzlists
+                wget https://raw.githubusercontent.com/Bo0oM/fuzz.txt/master/fuzz.txt -O ~/wordlists/fuzzlists/fuzz.txt
+                wget https://raw.githubusercontent.com/Bo0oM/fuzz.txt/master/extensions.txt -O ~/wordlists/fuzzlists/extensions.txt
+                echo "Fuzz wordlists installed"
+        fi
+}
+
 function download_kj_ips(){
         if [ -d ~/iplists/kaeferjaeger ];
         then
@@ -398,6 +410,7 @@ function main(){
    install_paramspider
    download_seclists
    download_kj_ips
+   download_fuzz
    install_gf_templates
    install_uro
    install_ipython
