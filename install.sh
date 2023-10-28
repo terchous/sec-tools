@@ -374,7 +374,7 @@ function install_gf_templates(){
 	cd $START_CWD
 }
 
-install_docker(){
+function install_docker(){
 	package_install docker.io
 	sudo systemctl enable docker --now
 	sudo usermod -aG docker $USER
@@ -384,7 +384,7 @@ install_docker(){
 	package_install docker-ce docker-cli-ce containerd.io
 }
 
-download_bbrf_server(){
+function download_bbrf_server(){
 	if [ -d ~/tools/bbrf-server ];
 	then
 		echo "BBRF is Installed already..."
