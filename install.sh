@@ -350,27 +350,25 @@ function install_git_lfs(){
 
 function install_gf_templates(){
 	START_CWD=$(pwd)
+        echo "Installing gf templates"
 	mkdir -p ~/.gf
 	mkdir -p ~/tools
+        echo "Created directories"
 	cd ~/tools
+        echo "Cloinig gf into ~/tools"
 	git clone https://github.com/tomnomnom/gf.git
 	cd gf
-	cp examples/*.json ~/.gf/
-	cd ~/.gf/
-	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/redirect.json
-	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/sqli.json
-	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/xss.json
-	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/debug_logic.json
-	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/idor.json
-	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/img-traversal.json
-	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/interestingEXT.json
-	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/interestingparams.json
-	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/interestingsubs.json
-	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/jsvar.json
-	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/lfi.json
-	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/rce.json
-	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/ssrf.json
-	wget https://raw.githubusercontent.com/1ndianl33t/Gf-Patterns/master/ssti.json
+        echo "Moving files to ~/.gf/"
+        mv examples/*.json ~/.gf/
+        cd ..
+        echo "Cleaning up gf checkout"
+        rm -rf ./gf
+	cd ~/tools
+        echo "Grabbing more templates"
+        git clone https://github.com/1ndianl33t/Gf-Patterns
+        mv ./Gf-Patterns/*.json ~/.gf
+        echo "Cleanup gf-patterns checkout"
+        rm -rf ./Gf-Patterns 
 	cd $START_CWD
 }
 
