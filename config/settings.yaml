@@ -1,0 +1,16 @@
+# Global settings
+settings:
+  go_version: "1.21.0"
+  tools_dir: "~/tools"
+  wordlists_dir: "~/wordlists"
+  iplists_dir: "~/iplists"
+  go_bin: "~/go/bin"
+  log_dir: "./logs"
+  
+# Installation options
+options:
+  skip_update: false
+  skip_upgrade: false
+  retry_failed: true
+  max_retries: 3
+  parallel_installs: false

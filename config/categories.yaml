@@ -1,0 +1,72 @@
+# Tool categories for selective installation
+categories:
+  recon:
+    description: "Reconnaissance tools"
+    tools:
+      - subfinder
+      - httpx
+      - httprobe
+      - amass
+      - chaos
+      - assetfinder
+      - gau
+      - waybackurls
+      - metabigor
+      - GoLinkFinder
+      
+  scanning:
+    description: "Scanning and vulnerability detection"
+    tools:
+      - nuclei
+      - naabu
+      - jaeles
+      - nmap
+      
+  fuzzing:
+    description: "Fuzzing and directory brute-forcing"
+    tools:
+      - gobuster
+      - ffuf
+      - dirb
+  crawling:
+    description: "Web crawling and spidering"
+    tools:
+      - gospider
+      - hakrawler
+      - katana
+      - cariddi
+      
+  exploitation:
+    description: "Exploitation and testing tools"
+    tools:
+      - airixss
+      - dalfox
+      
+  utility:
+    description: "Utility and helper tools"
+    tools:
+      - notify
+      - anew
+      - meg
+      - gf
+      - filter-resolved
+      - haklistgen
+      - goop
+      - qsreplace
+      - unfurl
+      - jq
+      - parallel
+      
+  wordlists:
+    description: "Wordlist collections"
+    tools:
+      - SecLists
+      - fuzz-wordlists
+      
+  infrastructure:
+    description: "Supporting infrastructure"
+    tools:
+      - pyenv
+      - pipx
+      - golang
+      - docker

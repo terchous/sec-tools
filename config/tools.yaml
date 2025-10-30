@@ -1,0 +1,207 @@
+# APT packages
+apt_packages:
+  - httping
+  - nmap
+  - fping
+  - bat
+  - tldr
+  - tmux
+  - jq
+  - dirb
+  - ripgrep
+  - nethogs
+  - iptraf-ng
+  - htop
+  - tree
+  - build-essential
+  - libssl-dev
+  - zlib1g-dev
+  - libbz2-dev
+  - libreadline-dev
+  - libsqlite3-dev
+  - curl
+  - libncursesw5-dev
+  - xz-utils
+  - tk-dev
+  - libxml2-dev
+  - libxmlsec1-dev
+  - libffi-dev
+  - liblzma-dev
+  - parallel
+  - libpcap-dev
+  - git-lfs
+
+# Go tools
+go_tools:
+  - name: subfinder
+    install: "go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest"
+    category: recon
+    
+  - name: httpx
+    install: "go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest"
+    category: recon
+    
+  - name: nuclei
+    install: "go install -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest"
+    category: scanning
+    
+  - name: notify
+    install: "go install -v github.com/projectdiscovery/notify/cmd/notify@latest"
+    category: utility
+    
+  - name: anew
+    install: "go install -v github.com/tomnomnom/anew@latest"
+    category: utility
+    
+  - name: httprobe
+    install: "go install -v github.com/tomnomnom/httprobe@latest"
+    category: recon
+    
+  - name: gobuster
+    install: "go install -v github.com/OJ/gobuster/v3@latest"
+    category: fuzzing
+    
+  - name: meg
+    install: "go install -v github.com/tomnomnom/meg@latest"
+    category: utility
+    
+  - name: naabu
+    install: "go install -v github.com/projectdiscovery/naabu/v2/cmd/naabu@latest"
+    category: scanning
+    
+  - name: jaeles
+    install: "go install -v github.com/jaeles-project/jaeles@latest"
+    category: scanning
+    
+  - name: amass
+    install: "go install -v github.com/owasp-amass/amass/v4/...@master"
+    category: recon
+    
+  - name: gospider
+    install: "go install -v github.com/jaeles-project/gospider@latest"
+    category: crawling
+    
+  - name: chaos
+    install: "go install -v github.com/projectdiscovery/chaos-client/cmd/chaos@latest"
+    category: recon
+    
+  - name: gf
+    install: "go install -v github.com/tomnomnom/gf@latest"
+    category: utility
+    
+  - name: assetfinder
+    install: "go install -v github.com/tomnomnom/assetfinder@latest"
+    category: recon
+    
+  - name: airixss
+    install: "go install -v github.com/ferreiraklet/airixss@latest"
+    category: exploitation
+    
+  - name: cariddi
+    install: "go install -v github.com/edoardottt/cariddi/cmd/cariddi@latest"
+    category: crawling
+    
+  - name: dalfox
+    install: "go install -v github.com/hahwul/dalfox/v2@latest"
+    category: exploitation
+    
+  - name: filter-resolved
+    install: "go install -v github.com/tomnomnom/hacks/filter-resolved@latest"
+    category: utility
+    
+  - name: ffuf
+    install: "go install -v github.com/ffuf/ffuf/v2@latest"
+    category: fuzzing
+    
+  - name: gau
+    install: "go install -v github.com/lc/gau/v2/cmd/gau@latest"
+    category: recon
+    
+  - name: hakrawler
+    install: "go install -v github.com/hakluke/hakrawler@latest"
+    category: crawling
+    
+  - name: haklistgen
+    install: "go install -v github.com/hakluke/haklistgen@latest"
+    category: utility
+    
+  - name: waybackurls
+    install: "go install -v github.com/tomnomnom/waybackurls@latest"
+    category: recon
+    
+  - name: goop
+    install: "go install -v github.com/deletescape/goop@latest"
+    category: utility
+    
+  - name: katana
+    install: "go install -v github.com/projectdiscovery/katana/cmd/katana@latest"
+    category: crawling
+    
+  - name: qsreplace
+    install: "go install -v github.com/tomnomnom/qsreplace@latest"
+    category: utility
+    
+  - name: metabigor
+    install: "go install github.com/j3ssie/metabigor@latest"
+    category: recon
+    
+  - name: unfurl
+    install: "go install github.com/tomnomnom/unfurl@latest"
+    category: utility
+    
+  - name: GoLinkFinder
+    install: "go install github.com/0xsha/GoLinkFinder@latest"
+    category: recon
+
+# Python/pipx tools
+python_tools:
+  - name: uro
+    source: "git+https://github.com/s0md3v/uro"
+    
+  - name: bbrf-client
+    source: "git+https://github.com/honoki/bbrf-client"
+    
+  - name: ipython
+    source: "ipython"
+
+# Git-based tools
+git_tools:
+  - name: SecLists
+    repo: "https://github.com/danielmiessler/SecLists.git"
+    dest: "~/wordlists/seclists"
+    
+  - name: bbrf-server
+    repo: "https://github.com/honoki/bbrf-server/"
+    dest: "~/tools/bbrf-server"
+    
+  - name: gf-templates
+    repo: "https://github.com/tomnomnom/gf.git"
+    dest: "~/tools/gf-temp"
+    post_install: "mv ~/tools/gf-temp/examples/*.json ~/.gf/ && rm -rf ~/tools/gf-temp"
+    
+  - name: gf-patterns
+    repo: "https://github.com/1ndianl33t/Gf-Patterns"
+    dest: "~/tools/gf-patterns-temp"
+    post_install: "mv ~/tools/gf-patterns-temp/*.json ~/.gf/ && rm -rf ~/tools/gf-patterns-temp"
+
+# Custom downloads
+downloads:
+  - name: fuzz-wordlists
+    files:
+      - url: "https://raw.githubusercontent.com/Bo0oM/fuzz.txt/master/fuzz.txt"
+        dest: "~/wordlists/fuzzlists/fuzz.txt"
+      - url: "https://raw.githubusercontent.com/Bo0oM/fuzz.txt/master/extensions.txt"
+        dest: "~/wordlists/fuzzlists/extensions.txt"
+        
+  - name: kaeferjaeger-ips
+    files:
+      - url: "https://kaeferjaeger.gay/sni-ip-ranges/amazon/ipv4_merged_sni.txt"
+        dest: "~/iplists/kaeferjaeger/amazon_ipv4_merged_sni.txt"
+      - url: "https://kaeferjaeger.gay/sni-ip-ranges/digitalocean/ipv4_merged_sni.txt"
+        dest: "~/iplists/kaeferjaeger/digitalocean_ipv4_merged_sni.txt"
+      - url: "https://kaeferjaeger.gay/sni-ip-ranges/google/ipv4_merged_sni.txt"
+        dest: "~/iplists/kaeferjaeger/google_ipv4_merged_sni.txt"
+      - url: "https://kaeferjaeger.gay/sni-ip-ranges/microsoft/ipv4_merged_sni.txt"
+        dest: "~/iplists/kaeferjaeger/microsoft_ipv4_merged_sni.txt"
+      - url: "https://kaeferjaeger.gay/sni-ip-ranges/oracle/ipv4_merged_sni.txt"
+        dest: "~/iplists/kaeferjaeger/oracle_ipv4_merged_sni.txt"
