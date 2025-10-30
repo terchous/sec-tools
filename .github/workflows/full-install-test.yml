@@ -27,7 +27,7 @@ jobs:
           apt-get install -yq git curl wget sudo
       
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       - name: Install dependencies
         run: |
