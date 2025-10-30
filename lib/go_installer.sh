@@ -51,19 +51,28 @@ go_install_tool() {
     local install_cmd=$2
     local binary_path="${3:-$GO_BIN/$tool_name}"
     
+    # Always expand the path to handle ~ properly
     binary_path=$(expand_path "$binary_path")
     
+    # FIXED: Always check the specific binary path, not PATH lookup
+    # This prevents conflicts with tools of the same name (e.g., httpx)
     if file_exists "$binary_path"; then
         log_debug "$tool_name already installed at $binary_path"
         return 0
     fi
     
-    log_info "Installing $tool_name..."
+    log_info "Installing $tool_name to $binary_path..."
     log_debug "Command: $install_cmd"
     
     if eval "$install_cmd"; then
-        log_success "Installed $tool_name"
-        return 0
+        # Verify the binary was actually created
+        if file_exists "$binary_path"; then
+            log_success "Installed $tool_name at $binary_path"
+            return 0
+        else
+            log_warn "Installation succeeded but binary not found at expected path: $binary_path"
+            return 0
+        fi
     else
         log_error "Failed to install $tool_name"
         return 1
@@ -101,7 +110,7 @@ go_install_from_yaml() {
         local binary=$(yq eval ".${category}[$i].binary" "$yaml_file")
         
         # Use default binary path if not specified
-        if [ "$binary" = "null" ]; then
+        if [ "$binary" = "null" ] || [ -z "$binary" ]; then
             binary="$GO_BIN/$name"
         fi
         

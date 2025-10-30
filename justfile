@@ -161,3 +161,33 @@ fmt:
     @yq eval '.' {{categories_yaml}} -i
     @yq eval '.' {{settings_yaml}} -i
     @echo "Formatted all YAML files"
+
+# Install only uv
+install-uv:
+    @echo "Installing uv..."
+    @bash -c 'source lib/python_installer.sh && install_uv'
+
+# List all uv tools
+list-uv-tools:
+    @uv tool list
+
+# Update all Python/uv tools
+update-python:
+    @echo "Updating Python tools via uv..."
+    @bash -c 'source lib/python_installer.sh && python_update_all'
+
+# Install specific Python tool
+install-python-tool TOOL SOURCE:
+    @echo "Installing {{TOOL}} from {{SOURCE}}..."
+    @bash -c 'source lib/python_installer.sh && uv_install_tool "{{TOOL}}" "{{SOURCE}}"'
+
+# Uninstall Python tool
+uninstall-python-tool TOOL:
+    @echo "Uninstalling {{TOOL}}..."
+    @uv tool uninstall {{TOOL}}
+
+# Show uv version and info
+uv-info:
+    @uv --version
+    @echo ""
+    @uv tool list

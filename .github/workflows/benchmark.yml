@@ -1,0 +1,66 @@
+name: Performance Benchmark
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 1 * *'  # Monthly on the 1st
+
+jobs:
+  benchmark:
+    name: Installation Performance
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | sudo bash -s -- --to /usr/local/bin
+      
+      - name: Benchmark - System Packages
+        run: |
+          start_time=$(date +%s)
+          just install-system
+          end_time=$(date +%s)
+          duration=$((end_time - start_time))
+          echo "System packages installation took: ${duration}s"
+          echo "system_packages_duration=${duration}" >> benchmark_results.txt
+      
+      - name: Benchmark - Languages
+        run: |
+          start_time=$(date +%s)
+          ./install.sh --languages
+          end_time=$(date +%s)
+          duration=$((end_time - start_time))
+          echo "Languages installation took: ${duration}s"
+          echo "languages_duration=${duration}" >> benchmark_results.txt
+      
+      - name: Benchmark - Go Tools (5 tools)
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
+          start_time=$(date +%s)
+          source lib/go_installer.sh
+          go_install_tool "subfinder" "go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest"
+          go_install_tool "httpx" "go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest"
+          go_install_tool "nuclei" "go install -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest"
+          go_install_tool "naabu" "go install -v github.com/projectdiscovery/naabu/v2/cmd/naabu@latest"
+          go_install_tool "katana" "go install -v github.com/projectdiscovery/katana/cmd/katana@latest"
+          end_time=$(date +%s)
+          duration=$((end_time - start_time))
+          echo "5 Go tools installation took: ${duration}s"
+          echo "go_tools_5_duration=${duration}" >> benchmark_results.txt
+      
+      - name: Display benchmark results
+        run: |
+          echo "=== Benchmark Results ==="
+          cat benchmark_results.txt
+      
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark_results.txt
+          retention-days: 90

@@ -1,12 +1,14 @@
 # Global settings
 settings:
   go_version: "1.21.0"
+  python_version: "3.12" # For uv python install
   tools_dir: "~/tools"
   wordlists_dir: "~/wordlists"
   iplists_dir: "~/iplists"
   go_bin: "~/go/bin"
+  uv_bin: "~/.cargo/bin"
+  python_bin: "~/.local/bin"
   log_dir: "./logs"
-  
 # Installation options
 options:
   skip_update: false
@@ -14,3 +16,5 @@ options:
   retry_failed: true
   max_retries: 3
   parallel_installs: false
+  use_uv: true # Use uv instead of pip/pipx
+  install_pyenv: false # Optional: only if you need multiple Python versions

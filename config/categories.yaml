@@ -13,7 +13,6 @@ categories:
       - waybackurls
       - metabigor
       - GoLinkFinder
-      
   scanning:
     description: "Scanning and vulnerability detection"
     tools:
@@ -21,7 +20,6 @@ categories:
       - naabu
       - jaeles
       - nmap
-      
   fuzzing:
     description: "Fuzzing and directory brute-forcing"
     tools:
@@ -35,13 +33,11 @@ categories:
       - hakrawler
       - katana
       - cariddi
-      
   exploitation:
     description: "Exploitation and testing tools"
     tools:
       - airixss
       - dalfox
-      
   utility:
     description: "Utility and helper tools"
     tools:
@@ -56,13 +52,11 @@ categories:
       - unfurl
       - jq
       - parallel
-      
   wordlists:
     description: "Wordlist collections"
     tools:
       - SecLists
       - fuzz-wordlists
-      
   infrastructure:
     description: "Supporting infrastructure"
     tools:

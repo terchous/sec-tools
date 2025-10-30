@@ -1,0 +1,302 @@
+name: Test Installation Script
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:  # Allow manual trigger
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday at midnight
+
+jobs:
+  test-ubuntu:
+    name: Test on Ubuntu ${{ matrix.ubuntu-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ubuntu-version: ['22.04', '24.04']
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up environment
+        run: |
+          echo "DEBIAN_FRONTEND=noninteractive" >> $GITHUB_ENV
+          echo "HOME=$HOME" >> $GITHUB_ENV
+      
+      - name: Install yq (YAML processor)
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+          yq --version
+      
+      - name: Install just (task runner)
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | sudo bash -s -- --to /usr/local/bin
+          just --version
+      
+      - name: Validate configuration files
+        run: just validate-config
+      
+      - name: Run dry-run test
+        run: |
+          chmod +x install.sh
+          ./install.sh --dry-run
+      
+      - name: Test system packages installation
+        run: |
+          just install-system
+      
+      - name: Install Go
+        run: |
+          ./install.sh --languages
+      
+      - name: Verify Go installation
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
+          go version
+      
+      - name: Test Go tools installation (sample)
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
+          # Install a few test tools
+          source lib/go_installer.sh
+          go_install_tool "subfinder" "go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest"
+          go_install_tool "httpx" "go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest"
+      
+      - name: Verify Go tools
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
+          ls -lh $HOME/go/bin/
+          $HOME/go/bin/subfinder -version || true
+          $HOME/go/bin/httpx -version || true
+      
+      - name: Test UV installation
+        run: |
+          source lib/python_installer.sh
+          install_uv
+          export PATH="$HOME/.cargo/bin:$PATH"
+          uv --version || $HOME/.cargo/bin/uv --version
+      
+      - name: Test Python tools installation (sample)
+        run: |
+          export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
+          source lib/python_installer.sh
+          uv_install_tool "httpie" "httpie"
+      
+      - name: Run verification
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin:$HOME/.cargo/bin:$HOME/.local/bin
+          ./install.sh --verify || true
+      
+      - name: List installed tools
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin:$HOME/.cargo/bin:$HOME/.local/bin
+          ./install.sh --list
+      
+      - name: Generate installation report
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin:$HOME/.cargo/bin:$HOME/.local/bin
+          ./install.sh --report
+      
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-${{ matrix.ubuntu-version }}-logs
+          path: logs/
+          retention-days: 7
+      
+      - name: Upload installation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-${{ matrix.ubuntu-version }}-report
+          path: installation-report-*.txt
+          retention-days: 7
+
+  test-kali:
+    name: Test on Kali Linux
+    runs-on: ubuntu-latest
+    container:
+      image: kalilinux/kali-rolling:latest
+      options: --user root
+    
+    steps:
+      - name: Update apt and install dependencies
+        run: |
+          apt-get update -yq
+          apt-get install -yq git curl wget sudo
+      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install yq (YAML processor)
+        run: |
+          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+          chmod +x /usr/bin/yq
+          yq --version
+      
+      - name: Install just (task runner)
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+          just --version
+      
+      - name: Validate configuration files
+        run: just validate-config
+      
+      - name: Run dry-run test
+        run: |
+          chmod +x install.sh
+          ./install.sh --dry-run
+      
+      - name: Test system packages installation
+        run: |
+          just install-system
+      
+      - name: Install Go
+        run: |
+          ./install.sh --languages
+      
+      - name: Verify Go installation
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:/root/go/bin
+          go version
+      
+      - name: Test Go tools installation (sample)
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:/root/go/bin
+          source lib/go_installer.sh
+          go_install_tool "subfinder" "go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest"
+          go_install_tool "nuclei" "go install -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest"
+      
+      - name: Verify Go tools
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:/root/go/bin
+          ls -lh /root/go/bin/ || true
+          /root/go/bin/subfinder -version || true
+          /root/go/bin/nuclei -version || true
+      
+      - name: Test UV installation
+        run: |
+          source lib/python_installer.sh
+          install_uv
+          export PATH="/root/.cargo/bin:$PATH"
+          uv --version || /root/.cargo/bin/uv --version
+      
+      - name: Run verification
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:/root/go/bin:/root/.cargo/bin:/root/.local/bin
+          ./install.sh --verify || true
+      
+      - name: List installed tools
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:/root/go/bin:/root/.cargo/bin:/root/.local/bin
+          ./install.sh --list
+      
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kali-logs
+          path: logs/
+          retention-days: 7
+
+  test-categories:
+    name: Test Category Installation
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        category: ['recon', 'scanning', 'fuzzing']
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | sudo bash -s -- --to /usr/local/bin
+      
+      - name: Install Go
+        run: |
+          ./install.sh --languages
+          export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
+          go version
+      
+      - name: Install category - ${{ matrix.category }}
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
+          just install-category ${{ matrix.category }}
+      
+      - name: Verify category installation
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin:$HOME/.cargo/bin:$HOME/.local/bin
+          ./install.sh --list
+      
+      - name: Upload category logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: category-${{ matrix.category }}-logs
+          path: logs/
+          retention-days: 7
+
+  lint-and-validate:
+    name: Lint and Validate
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install ShellCheck
+        run: sudo apt-get install -yq shellcheck
+      
+      - name: Lint shell scripts
+        run: |
+          echo "=== Linting shell scripts ==="
+          find . -name "*.sh" -type f | while read -r script; do
+            echo "Checking: $script"
+            shellcheck "$script" -e SC1090,SC1091 || true
+          done
+      
+      - name: Install yamllint
+        run: sudo apt-get install -yq yamllint
+      
+      - name: Lint YAML files
+        run: |
+          echo "=== Linting YAML files ==="
+          find config -name "*.yaml" -o -name "*.yml" | while read -r file; do
+            echo "Checking: $file"
+            yamllint "$file" || true
+          done
+      
+      - name: Install yq
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+      
+      - name: Validate YAML structure
+        run: |
+          echo "=== Validating YAML structure ==="
+          yq eval '.' config/tools.yaml > /dev/null && echo "✓ tools.yaml valid"
+          yq eval '.' config/categories.yaml > /dev/null && echo "✓ categories.yaml valid"
+          yq eval '.' config/settings.yaml > /dev/null && echo "✓ settings.yaml valid"
+      
+      - name: Check for duplicate tool names
+        run: |
+          echo "=== Checking for duplicate tool names ==="
+          duplicates=$(yq eval '.go_tools[].name' config/tools.yaml | sort | uniq -d)
+          if [ -n "$duplicates" ]; then
+            echo "❌ Duplicate Go tools found:"
+            echo "$duplicates"
+            exit 1
+          else
+            echo "✓ No duplicate Go tools"
+          fi

@@ -43,13 +43,14 @@ pkg_install() {
 }
 
 # Install multiple packages from array
+# FIXED: Avoid circular nameref by using different variable name
 pkg_install_batch() {
-    local -n packages=$1
+    local -n pkg_array=$1  # Use different name than 'packages'
     local failed=()
     
-    log_info "Installing ${#packages[@]} packages..."
+    log_info "Installing ${#pkg_array[@]} packages..."
     
-    for package in "${packages[@]}"; do
+    for package in "${pkg_array[@]}"; do
         if ! pkg_install "$package"; then
             failed+=("$package")
         fi
@@ -71,13 +72,19 @@ pkg_install_from_yaml() {
     
     log_info "Reading packages from $yaml_file ($category)..."
     
-    # Read packages from YAML
-    local packages=($(yq eval ".${category}[]" "$yaml_file"))
+    # Read packages from YAML into array
+    local package_list=()
+    while IFS= read -r pkg; do
+        package_list+=("$pkg")
+    done < <(yq eval ".${category}[]" "$yaml_file")
     
-    if [ ${#packages[@]} -eq 0 ]; then
+    if [ ${#package_list[@]} -eq 0 ]; then
         log_warn "No packages found in $category"
         return 0
     fi
     
-    pkg_install_batch packages
+    log_info "Found ${#package_list[@]} packages to install"
+    
+    # Install packages
+    pkg_install_batch package_list
 }

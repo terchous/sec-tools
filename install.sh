@@ -38,6 +38,45 @@ load_settings() {
     log_debug "GO_BIN=$GO_BIN"
 }
 
+# Ensure critical tools are in PATH
+ensure_path() {
+    log_info "Ensuring critical tools are in PATH..."
+    
+    # Add Go bin
+    if [ -d "/usr/local/go/bin" ]; then
+        export PATH="/usr/local/go/bin:$PATH"
+    fi
+    if [ -d "$HOME/go/bin" ]; then
+        export PATH="$HOME/go/bin:$PATH"
+    fi
+    
+    # Add Cargo bin (for uv)
+    if [ -d "$HOME/.cargo/bin" ]; then
+        export PATH="$HOME/.cargo/bin:$PATH"
+    fi
+    
+    # Add local bin (for Python tools)
+    if [ -d "$HOME/.local/bin" ]; then
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+    
+    log_debug "Updated PATH: $PATH"
+}
+
+# Call in main()
+main() {
+    log_info "Bug Bounty Tools Installer - Starting..."
+    log_info "Script directory: $SCRIPT_DIR"
+    
+    # Load settings
+    load_settings
+    
+    # Ensure PATH is correct
+    ensure_path
+    
+    # ... rest of main function
+}
+
 # Create necessary directories
 setup_directories() {
     log_info "Creating necessary directories..."
@@ -69,11 +108,21 @@ install_languages() {
     # Install Go
     install_golang "$GO_VERSION"
     
-    # Install pyenv
-    install_pyenv
+    # Install uv (modern Python package manager)
+    install_uv
     
-    # Install pipx
-    install_pipx
+    # Optionally install pyenv (only if managing multiple Python versions)
+    local install_pyenv=$(yq eval '.options.install_pyenv' "$SETTINGS_YAML")
+    if [ "$install_pyenv" = "true" ]; then
+        install_pyenv
+    fi
+    
+    # Install Python using uv (optional)
+    local python_version=$(yq eval '.settings.python_version' "$SETTINGS_YAML")
+    if [ "$python_version" != "null" ] && [ -n "$python_version" ]; then
+        log_info "Installing Python $python_version via uv..."
+        python_install_version "$python_version"
+    fi
     
     log_success "Programming languages installed"
 }
@@ -202,9 +251,8 @@ update_tools() {
         fi
     done
     
-    # Update Python tools
     log_info "Updating Python tools..."
-    pipx upgrade-all || log_warn "Failed to upgrade some Python tools"
+    python_update_all
     
     # Update system packages
     log_info "Updating system packages..."
