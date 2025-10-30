@@ -1,0 +1,63 @@
+name: Full Installation Test (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'Operating System'
+        required: true
+        type: choice
+        options:
+          - ubuntu-22.04
+          - ubuntu-24.04
+          - kali-linux
+
+jobs:
+  full-install:
+    name: Full Installation - ${{ github.event.inputs.os }}
+    runs-on: ${{ github.event.inputs.os == 'kali-linux' && 'ubuntu-latest' || github.event.inputs.os }}
+    container: ${{ github.event.inputs.os == 'kali-linux' && 'kalilinux/kali-rolling:latest' || null }}
+    timeout-minutes: 60
+    
+    steps:
+      - name: Setup Kali Linux
+        if: github.event.inputs.os == 'kali-linux'
+        run: |
+          apt-get update -yq
+          apt-get install -yq git curl wget sudo
+      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | sudo bash -s -- --to /usr/local/bin
+      
+      - name: Run full installation
+        run: |
+          chmod +x install.sh
+          just install-all
+        env:
+          DEBIAN_FRONTEND: noninteractive
+      
+      - name: Verify installation
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin:$HOME/.cargo/bin:$HOME/.local/bin
+          ./install.sh --verify
+      
+      - name: Generate report
+        run: |
+          export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin:$HOME/.cargo/bin:$HOME/.local/bin
+          ./install.sh --report
+      
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-install-${{ github.event.inputs.os }}
+          path: |
+            logs/
+            installation-report-*.txt
+          retention-days: 30

@@ -1,0 +1,66 @@
+name: PR Test Summary
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  test-and-comment:
+    name: Test and Comment on PR
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | sudo bash -s -- --to /usr/local/bin
+      
+      - name: Run tests
+        id: tests
+        run: |
+          echo "### 🧪 Test Results" > test_summary.md
+          echo "" >> test_summary.md
+          
+          # Validate config
+          if just validate-config; then
+            echo "✅ Configuration validation passed" >> test_summary.md
+          else
+            echo "❌ Configuration validation failed" >> test_summary.md
+          fi
+          
+          # Dry run
+          if ./install.sh --dry-run; then
+            echo "✅ Dry run passed" >> test_summary.md
+          else
+            echo "❌ Dry run failed" >> test_summary.md
+          fi
+          
+          # Count tools
+          go_tools=$(yq eval '.go_tools | length' config/tools.yaml)
+          py_tools=$(yq eval '.python_tools | length' config/tools.yaml)
+          apt_pkgs=$(yq eval '.apt_packages | length' config/tools.yaml)
+          
+          echo "" >> test_summary.md
+          echo "### 📊 Tool Count" >> test_summary.md
+          echo "- Go tools: $go_tools" >> test_summary.md
+          echo "- Python tools: $py_tools" >> test_summary.md
+          echo "- APT packages: $apt_pkgs" >> test_summary.md
+      
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('test_summary.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
