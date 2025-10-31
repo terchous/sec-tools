@@ -118,7 +118,7 @@ go_install_from_yaml() {
                 dependencies+=("$dep")
             done
             log_info "Installing dependencies for $name: ${dependencies[*]}"
-            if ! pkg_install_batch dependencies; then
+            if ! pkg_install_batch "$dependencies"; then
                 log_warn "Failed to install some dependencies for $name"
             fi
         fi
