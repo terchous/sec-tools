@@ -108,6 +108,20 @@ go_install_from_yaml() {
         local name=$(yq eval ".${category}[$i].name" "$yaml_file")
         local cmd=$(yq eval ".${category}[$i].install" "$yaml_file")
         local binary=$(yq eval ".${category}[$i].binary" "$yaml_file")
+        local dependencies_count=$(yq eval ".${category}[$i].dependencies | length" "$yaml_file")
+        local dependencies=()
+
+        # Install dependencies if any
+        if [ "$dependencies_count" != "null" ] && [ "$dependencies_count" -gt 0 ]; then
+            for j in $(seq 0 $((dependencies_count - 1))); do
+                local dep=$(yq eval ".${category}[$i].dependencies[$j]" "$yaml_file")
+                dependencies+=("$dep")
+            done
+            log_info "Installing dependencies for $name: ${dependencies[*]}"
+            if ! pkg_install_batch dependencies; then
+                log_warn "Failed to install some dependencies for $name"
+            fi
+        fi
         
         # Use default binary path if not specified
         if [ "$binary" = "null" ] || [ -z "$binary" ]; then

@@ -58,6 +58,8 @@ go_tools:
   - name: naabu
     install: "go install -v github.com/projectdiscovery/naabu/v2/cmd/naabu@latest"
     category: scanning
+    dependencies:
+      - libpcap-dev
   - name: jaeles
     install: "go install -v github.com/jaeles-project/jaeles@latest"
     category: scanning
