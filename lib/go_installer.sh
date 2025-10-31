@@ -46,30 +46,15 @@ install_golang() {
 }
 
 # Install single Go tool
-# add dependency installation capability
 go_install_tool() {
     local tool_name=$1
     local install_cmd=$2
     local binary_path="${3:-$GO_BIN/$tool_name}"
-
-    # check if config/tools.yaml specifies dependencies for this tool
-    # if so, install them first
-    # (this requires the caller to have already parsed the YAML and passed dependencies)
-    if [ -n "$4" ]; then
-        local dependencies=("${!4}")
-        if [ ${#dependencies[@]} -gt 0 ]; then
-            log_info "Installing dependencies for $tool_name: ${dependencies[*]}"
-            if ! pkg_install_batch dependencies; then
-                log_warn "Failed to install some dependencies for $tool_name"
-            fi
-        fi
-    fi
     
     # Always expand the path to handle ~ properly
     binary_path=$(expand_path "$binary_path")
     
-    # FIXED: Always check the specific binary path, not PATH lookup
-    # This prevents conflicts with tools of the same name (e.g., httpx)
+    # Check if already installed at the specific binary path
     if file_exists "$binary_path"; then
         log_debug "$tool_name already installed at $binary_path"
         return 0
@@ -93,7 +78,7 @@ go_install_tool() {
     fi
 }
 
-# Install Go tools from YAML
+# Install Go tools from YAML with dependency support
 go_install_from_yaml() {
     local yaml_file=$1
     local category=${2:-"go_tools"}
@@ -123,16 +108,16 @@ go_install_from_yaml() {
         local cmd=$(yq eval ".${category}[$i].install" "$yaml_file")
         local binary=$(yq eval ".${category}[$i].binary" "$yaml_file")
         local dependencies_count=$(yq eval ".${category}[$i].dependencies | length" "$yaml_file")
-        local dependencies=()
-
+        
         # Install dependencies if any
         if [ "$dependencies_count" != "null" ] && [ "$dependencies_count" -gt 0 ]; then
+            local dependencies=()
             for j in $(seq 0 $((dependencies_count - 1))); do
                 local dep=$(yq eval ".${category}[$i].dependencies[$j]" "$yaml_file")
                 dependencies+=("$dep")
             done
             log_info "Installing dependencies for $name: ${dependencies[*]}"
-            if ! pkg_install_batch "$dependencies"; then
+            if ! pkg_install "${dependencies[@]}"; then
                 log_warn "Failed to install some dependencies for $name"
             fi
         fi
