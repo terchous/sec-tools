@@ -46,10 +46,24 @@ install_golang() {
 }
 
 # Install single Go tool
+# add dependency installation capability
 go_install_tool() {
     local tool_name=$1
     local install_cmd=$2
     local binary_path="${3:-$GO_BIN/$tool_name}"
+
+    # check if config/tools.yaml specifies dependencies for this tool
+    # if so, install them first
+    # (this requires the caller to have already parsed the YAML and passed dependencies)
+    if [ -n "$4" ]; then
+        local dependencies=("${!4}")
+        if [ ${#dependencies[@]} -gt 0 ]; then
+            log_info "Installing dependencies for $tool_name: ${dependencies[*]}"
+            if ! pkg_install_batch dependencies; then
+                log_warn "Failed to install some dependencies for $tool_name"
+            fi
+        fi
+    fi
     
     # Always expand the path to handle ~ properly
     binary_path=$(expand_path "$binary_path")

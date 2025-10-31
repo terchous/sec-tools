@@ -211,6 +211,12 @@ install_by_category() {
     for tool in "${tools[@]}"; do
         # Check if it's a Go tool
         local go_cmd=$(yq eval ".go_tools[] | select(.name == \"$tool\") | .install" "$TOOLS_YAML")
+        # Check for dependencies
+        local go_deps=$(yq eval ".go_tools[] | select(.name == \"$tool\") | .dependencies[]" "$TOOLS_YAML" | xargs)
+        if go_deps != "null" && [ -n "$go_deps" ]; then
+            go_install_tool "$tool" "$go_cmd" "$go_deps"
+        fi
+
         if [ "$go_cmd" != "null" ] && [ -n "$go_cmd" ]; then
             go_install_tool "$tool" "$go_cmd"
             continue
