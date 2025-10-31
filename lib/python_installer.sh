@@ -14,6 +14,11 @@ UV_HOME="${UV_HOME:-$HOME/.cargo}"
 UV_BIN="$UV_HOME/bin"
 UV_BINARY="$UV_BIN/uv"
 
+# Detect if running in CI
+is_ci() {
+    [ -n "${CI:-}" ] || [ -n "${GITHUB_ACTIONS:-}" ] || [ -n "${GITLAB_CI:-}" ]
+}
+
 # Add UV to PATH for current session
 add_uv_to_path() {
     if [[ ":$PATH:" != *":$UV_BIN:"* ]]; then
@@ -24,6 +29,12 @@ add_uv_to_path() {
 
 # Add UV to shell RC files
 add_uv_to_shell_rc() {
+    # Skip in CI environments
+    if is_ci; then
+        log_debug "Running in CI, skipping shell RC update"
+        return 0
+    fi
+    
     local shell_rc=""
     
     # Detect shell and RC file
@@ -52,13 +63,114 @@ UV_PATH_EOF
     log_success "Added UV to $shell_rc"
 }
 
+# Install UV directly (binary download - works best in CI)
+install_uv_direct() {
+    log_info "Installing UV via direct binary download..."
+    
+    # Detect architecture and OS
+    local os="unknown-linux-gnu"
+    local arch=$(uname -m)
+    
+    case "$arch" in
+        x86_64)
+            arch="x86_64"
+            ;;
+        aarch64|arm64)
+            arch="aarch64"
+            ;;
+        *)
+            log_error "Unsupported architecture: $arch"
+            return 1
+            ;;
+    esac
+    
+    # Get latest version from GitHub API
+    local uv_version=$(curl -s https://api.github.com/repos/astral-sh/uv/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+    
+    if [ -z "$uv_version" ]; then
+        log_warn "Could not detect latest version, using fallback"
+        uv_version="0.4.30"
+    fi
+    
+    log_info "Installing UV version: $uv_version"
+    
+    local uv_url="https://github.com/astral-sh/uv/releases/download/${uv_version}/uv-${arch}-${os}.tar.gz"
+    local temp_dir=$(mktemp -d)
+    
+    # Download
+    log_info "Downloading from: $uv_url"
+    if ! wget -q --show-progress "$uv_url" -O "$temp_dir/uv.tar.gz"; then
+        log_error "Failed to download UV"
+        rm -rf "$temp_dir"
+        return 1
+    fi
+    
+    # Extract
+    log_info "Extracting UV..."
+    tar -xzf "$temp_dir/uv.tar.gz" -C "$temp_dir"
+    
+    # Create directory
+    safe_mkdir "$UV_BIN"
+    
+    # Find and move binary
+    local uv_binary=$(find "$temp_dir" -name "uv" -type f | head -n1)
+    if [ -z "$uv_binary" ]; then
+        log_error "UV binary not found in archive"
+        rm -rf "$temp_dir"
+        return 1
+    fi
+    
+    mv "$uv_binary" "$UV_BINARY"
+    chmod +x "$UV_BINARY"
+    
+    # Cleanup
+    rm -rf "$temp_dir"
+    
+    log_success "UV binary installed to: $UV_BINARY"
+    
+    # Verify
+    if [ -f "$UV_BINARY" ]; then
+        log_success "UV installation verified"
+        return 0
+    else
+        log_error "UV binary not found after installation"
+        return 1
+    fi
+}
+
+# Install UV using official installer (may fail in CI)
+install_uv_official() {
+    log_info "Installing UV via official installer..."
+    
+    # Create .cargo/bin directory if it doesn't exist
+    safe_mkdir "$UV_BIN"
+    
+    # Install uv using the official installer
+    if curl -LsSf https://astral.sh/uv/install.sh | sh; then
+        log_success "UV installer completed"
+        
+        # Check if binary exists
+        if [ -f "$UV_BINARY" ]; then
+            log_success "UV binary found at: $UV_BINARY"
+            return 0
+        else
+            log_error "UV binary not found after installation"
+            log_error "Expected location: $UV_BINARY"
+            return 1
+        fi
+    else
+        log_error "UV installer failed"
+        return 1
+    fi
+}
+
 # Install uv (the modern Python package installer)
 install_uv() {
     # First, add to PATH if uv already exists but isn't in PATH
     if [ -f "$UV_BINARY" ]; then
         add_uv_to_path
-        if command_exists uv; then
-            local version=$(uv --version 2>/dev/null | head -n1)
+        if command_exists uv || "$UV_BINARY" --version >/dev/null 2>&1; then
+            local version=$("$UV_BINARY" --version 2>/dev/null | head -n1)
             log_info "uv already installed: $version"
             return 0
         fi
@@ -68,55 +180,51 @@ install_uv() {
     if command_exists uv; then
         local version=$(uv --version 2>/dev/null | head -n1)
         log_info "uv already installed: $version"
+        UV_BINARY=$(which uv)
         return 0
     fi
     
     log_info "Installing uv (modern Python package manager)..."
     
-    # Create .cargo/bin directory if it doesn't exist
-    safe_mkdir "$UV_BIN"
-    
-    # Install uv using the official installer
-    if curl -LsSf https://astral.sh/uv/install.sh | sh; then
-        log_success "uv installation completed"
-        
-        # Add to PATH for current session
+    # Try direct download first (more reliable in CI)
+    if install_uv_direct; then
         add_uv_to_path
-        
-        # Add to shell RC files for future sessions
         add_uv_to_shell_rc
         
         # Verify installation
-        if [ -f "$UV_BINARY" ]; then
-            log_success "UV binary found at: $UV_BINARY"
+        if "$UV_BINARY" --version >/dev/null 2>&1; then
+            local version=$("$UV_BINARY" --version 2>/dev/null | head -n1)
+            log_success "uv installed successfully: $version"
             
-            # Test if command works now
-            if command_exists uv; then
-                local version=$(uv --version 2>/dev/null | head -n1)
-                log_success "uv installed successfully: $version"
-                return 0
-            else
-                # Binary exists but command not found - PATH issue
-                log_warn "UV binary exists but 'uv' command not in PATH"
-                log_info "UV is installed at: $UV_BINARY"
-                log_info "You can use it directly: $UV_BINARY --version"
-                log_info "Or reload your shell: exec \$SHELL -l"
-                
-                # Create wrapper function for current session
-                eval "uv() { $UV_BINARY \"\$@\"; }"
-                export -f uv
-                log_success "Created 'uv' function wrapper for current session"
-                return 0
+            # Create wrapper function for current session
+            eval "uv() { $UV_BINARY \"\$@\"; }"
+            if ! is_ci; then
+                export -f uv 2>/dev/null || true
             fi
+            
+            return 0
         else
-            log_error "UV binary not found after installation"
-            log_error "Expected location: $UV_BINARY"
-            return 1
+            log_warn "Direct install succeeded but binary test failed"
         fi
-    else
-        log_error "Failed to install uv"
-        return 1
     fi
+    
+    # Fallback to official installer if direct download failed
+    log_warn "Direct download failed, trying official installer..."
+    if install_uv_official; then
+        add_uv_to_path
+        add_uv_to_shell_rc
+        
+        # Create wrapper function
+        eval "uv() { $UV_BINARY \"\$@\"; }"
+        if ! is_ci; then
+            export -f uv 2>/dev/null || true
+        fi
+        
+        return 0
+    fi
+    
+    log_error "Failed to install UV with both methods"
+    return 1
 }
 
 # Install pyenv (optional, for multiple Python versions)
@@ -132,7 +240,7 @@ install_pyenv() {
     curl https://pyenv.run | bash
     
     # Add to bashrc if not present
-    if ! grep -q 'PYENV_ROOT' ~/.bashrc; then
+    if ! is_ci && ! grep -q 'PYENV_ROOT' ~/.bashrc 2>/dev/null; then
         cat >> ~/.bashrc << 'PYENV_EOF'
 
 # Pyenv configuration
@@ -174,6 +282,9 @@ uv_install_tool() {
         log_info "uv not found, installing..."
         install_uv
     fi
+    
+    # Add UV to PATH
+    add_uv_to_path
     
     # Check if tool is already installed
     if file_exists "$tool_bin"; then
@@ -221,6 +332,8 @@ uv_upgrade_tool() {
 uv_list_tools() {
     log_info "Listing uv tools..."
     
+    add_uv_to_path
+    
     if command_exists uv || [ -f "$UV_BINARY" ]; then
         call_uv tool list
     else
@@ -256,6 +369,9 @@ python_install_from_yaml() {
         log_info "uv not found, installing..."
         install_uv
     fi
+    
+    # Add to PATH
+    add_uv_to_path
     
     local tool_count=$(yq eval ".${category} | length" "$yaml_file")
     
@@ -299,6 +415,8 @@ python_update_all() {
         return 1
     fi
     
+    add_uv_to_path
+    
     # Get list of installed tools
     local tools=($(call_uv tool list --quiet 2>/dev/null | awk '{print $1}' || true))
     
@@ -340,6 +458,8 @@ python_install_version() {
         install_uv
     fi
     
+    add_uv_to_path
+    
     if call_uv python install "$version"; then
         log_success "Installed Python $version"
         return 0
@@ -363,6 +483,8 @@ uv_create_venv() {
     
     log_info "Creating virtual environment at $venv_path..."
     
+    add_uv_to_path
+    
     local venv_cmd="call_uv venv"
     if [ -n "$python_version" ]; then
         venv_cmd="$venv_cmd --python $python_version"
@@ -374,35 +496,6 @@ uv_create_venv() {
         return 0
     else
         log_error "Failed to create virtual environment"
-        return 1
-    fi
-}
-
-# Install packages in a virtual environment using uv
-uv_pip_install() {
-    local venv_path=${1:-".venv"}
-    shift
-    local packages="$@"
-    
-    venv_path=$(expand_path "$venv_path")
-    
-    if ! dir_exists "$venv_path"; then
-        log_error "Virtual environment not found: $venv_path"
-        return 1
-    fi
-    
-    log_info "Installing packages in $venv_path: $packages"
-    
-    # Activate venv and install
-    source "$venv_path/bin/activate"
-    
-    if call_uv pip install $packages; then
-        log_success "Installed packages: $packages"
-        deactivate
-        return 0
-    else
-        log_error "Failed to install packages"
-        deactivate
         return 1
     fi
 }
