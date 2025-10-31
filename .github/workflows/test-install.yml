@@ -104,7 +104,7 @@ jobs:
       
       - name: Upload logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ubuntu-${{ matrix.ubuntu-version }}-logs
           path: logs/
@@ -112,7 +112,7 @@ jobs:
       
       - name: Upload installation report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ubuntu-${{ matrix.ubuntu-version }}-report
           path: installation-report-*.txt
@@ -199,7 +199,7 @@ jobs:
       
       - name: Upload logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: kali-logs
           path: logs/
@@ -241,7 +241,7 @@ jobs:
       
       - name: Upload category logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: category-${{ matrix.category }}-logs
           path: logs/
