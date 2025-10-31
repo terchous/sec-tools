@@ -4,7 +4,6 @@ apt_packages:
   - nmap
   - fping
   - bat
-  - tldr
   - tmux
   - jq
   - dirb
@@ -140,6 +139,9 @@ python_tools:
   - name: trufflehog
     source: "truffleHog"
     description: "Find secrets in git repositories"
+  - name: tldr
+    source: "tldr"
+    description: "TLDR man pages"
 # Git-based tools
 git_tools:
   - name: SecLists
