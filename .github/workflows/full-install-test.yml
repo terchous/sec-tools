@@ -27,7 +27,7 @@ jobs:
           apt-get install -yq git curl wget sudo
       
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       - name: Install dependencies
         run: |
@@ -54,7 +54,7 @@ jobs:
       
       - name: Upload artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: full-install-${{ github.event.inputs.os }}
           path: |
